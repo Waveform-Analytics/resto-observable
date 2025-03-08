@@ -2,6 +2,7 @@
 
 from resto import get_data
 import json
+import sys
 
 all_data = get_data(['users', 'visits', 'restaurants'])
 
