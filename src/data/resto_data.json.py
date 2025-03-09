@@ -7,8 +7,9 @@ import sys
 all_data = get_data(['users', 'visits', 'restaurants'])
 
 # Convert each DataFrame to records format (list of dictionaries)
+# Handle NaN values by replacing them with None before conversion
 json_ready_data = {
-    key: df.to_dict(orient='records') 
+    key: df.where(df.notna(), None).to_dict(orient='records')
     for key, df in all_data.items()
 }
 
