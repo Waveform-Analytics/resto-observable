@@ -2,10 +2,42 @@
 toc: false
 ---
 
+<!-- Load and transform the data -->
+
+```js
+// Load and split the data into separate variables
+const resto_data = FileAttachment("data/resto_data.json").json();
+```
+
+```js
+const {users, visits, restaurants} = resto_data;
+
+display(users);
+
+// Display summary statistics
+display({
+  "Users": users.length,
+  "Visits": visits.length,
+  "Restaurants": restaurants.length
+});
+
+// Show sample data from each array
+display("Sample User:", users[0].email);
+display("Sample Visit:", visits[0]);
+display("Sample Restaurant:", restaurants[0]);
+```
+
 <div class="hero">
-  <h1>PICC Rest Week Data Analysis</h1>
-  <h2>Welcome to your new app! Edit&nbsp;<code style="font-size: 90%;">src/index.md</code> to change this page.</h2>
-  <a href="https://observablehq.com/framework/getting-started">Get started<span style="display: inline-block; margin-left: 0.25rem;">↗︎</span></a>
+  <h1>Pleasure Island Restaurant Week</h1>
+</div>
+
+<div class="grid grid-cols-3">
+  <div class="card">
+    Chart your own data using <a href="https://observablehq.com/framework/lib/plot"><code>Plot</code></a> and <a href="https://observablehq.com/framework/files"><code>FileAttachment</code></a>. Make it responsive using <a href="https://observablehq.com/framework/javascript#resize(render)"><code>resize</code></a>.
+  </div>
+  <div class="card">
+    Create a <a href="https://observablehq.com/framework/project-structure">new page</a> by adding a Markdown file (<code>whatever.md</code>) to the <code>src</code> folder.
+  </div>
 </div>
 
 <div class="grid grid-cols-2" style="grid-auto-rows: 504px;">
@@ -67,45 +99,4 @@ Here are some ideas of things you could try…
   </div>
 </div>
 
-<style>
-
-.hero {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-family: var(--sans-serif);
-  margin: 4rem 0 8rem;
-  text-wrap: balance;
-  text-align: center;
-}
-
-.hero h1 {
-  margin: 1rem 0;
-  padding: 1rem 0;
-  max-width: none;
-  font-size: 14vw;
-  font-weight: 900;
-  line-height: 1;
-  background: linear-gradient(30deg, var(--theme-foreground-focus), currentColor);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.hero h2 {
-  margin: 0;
-  max-width: 34em;
-  font-size: 20px;
-  font-style: initial;
-  font-weight: 500;
-  line-height: 1.5;
-  color: var(--theme-foreground-muted);
-}
-
-@media (min-width: 640px) {
-  .hero h1 {
-    font-size: 90px;
-  }
-}
-
-</style>
+<link rel="stylesheet" href="styles/main.css">
