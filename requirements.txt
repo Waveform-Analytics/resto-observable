@@ -1,0 +1,2 @@
+git+https://github.com/Waveform-Analytics/resto-analysis.git
+pandas
