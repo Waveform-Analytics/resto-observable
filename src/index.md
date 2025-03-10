@@ -12,31 +12,44 @@ const {users, visits, restaurants, stats} = data;
 
 // Process dates for daily metrics
 function processDailyMetrics(users, visits) {
-  // Ensure dates are created with time set to noon to avoid timezone issues
-  const dateRange = d3.timeDays(
-    new Date('2025-03-08T12:00:00'),
-    new Date('2025-03-16T12:00:00')
-  );
+  // Create dates at start of day to avoid timezone issues
+  const startDate = new Date('2025-03-08');
+  startDate.setHours(0, 0, 0, 0);
+  const endDate = new Date('2025-03-16');
+  endDate.setHours(0, 0, 0, 0);
   
-  // Count daily signups
+  const dateRange = d3.timeDays(startDate, endDate);
+  
+  // Count daily signups with explicit date comparison
   const signupsByDay = d3.rollup(
     users,
     v => v.length,
-    d => d3.timeDay(new Date(d.created_at))
+    d => {
+      const date = new Date(d.created_at);
+      date.setHours(0, 0, 0, 0);
+      return date.getTime();
+    }
   );
   
-  // Count daily check-ins
+  // Count daily check-ins with explicit date comparison
   const checkinsByDay = d3.rollup(
     visits,
     v => v.length,
-    d => d3.timeDay(new Date(d.created_at))
+    d => {
+      const date = new Date(d.created_at);
+      date.setHours(0, 0, 0, 0);
+      return date.getTime();
+    }
   );
 
-  return dateRange.map(date => ({
-    date: d3.timeFormat("%Y-%m-%d")(date),
-    signups: signupsByDay.get(date) || 0,
-    checkins: checkinsByDay.get(date) || 0
-  }));
+  return dateRange.map(date => {
+    const dateKey = date.getTime();
+    return {
+      date: d3.timeFormat("%Y-%m-%d")(date),
+      signups: signupsByDay.get(dateKey) || 0,
+      checkins: checkinsByDay.get(dateKey) || 0
+    };
+  });
 }
 
 // Calculate metrics
@@ -44,6 +57,8 @@ const dailyMetrics = processDailyMetrics(users, visits);
 const totalSignups = users.length;
 const totalCheckins = visits.length;
 const visitedRestaurants = stats.visitedRestaurants;
+
+// display(dailyMetrics);
 
 // Calculate visits per user
 const visitsPerUser = d3.rollup(
@@ -67,6 +82,7 @@ const visitDistribution = Array.from(
     count: Array.from(visitsPerUser.values()).filter(v => v === (i + 1)).length
   })
 );
+
 ```
 
 # Pleasure Island Restaurant Week

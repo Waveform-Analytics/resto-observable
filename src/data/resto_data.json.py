@@ -8,12 +8,16 @@ import pandas as pd
 ignore_emails = [
     "michellejw@gmail.com",
     "michelle@waveformanalytics.com",
-    "michelle@bwri.org"
+    "michelle@bwri.org",
     "jaxblue28@hotmail.com",
     "jessbh3@gmail.com",
+    "a.c.keeler1013@gmail.com"
 ]
 
 all_data = get_data(["users", "visits", "restaurants"])
+
+# Filter out users with NaN created_at (incomplete registration)
+all_data["users"] = all_data["users"].dropna(subset=["created_at"])
 
 # Get user_ids associated with the ignored emails
 ignored_user_ids = all_data["users"][all_data["users"]["email"].isin(ignore_emails)][
