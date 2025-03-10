@@ -46,10 +46,7 @@ const totalCheckins = visits.length;
 const visitedRestaurants = stats.visitedRestaurants;
 ```
 
-<div class="hero">
-  <h1>Pleasure Island Restaurant Week</h1>
-</div>
-
+# Pleasure Island Restaurant Week
 
 <div class="grid grid-cols-3">
   <div class="card">
