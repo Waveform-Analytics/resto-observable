@@ -5,98 +5,127 @@ toc: false
 <!-- Load and transform the data -->
 
 ```js
-// Load and split the data into separate variables
-const resto_data = FileAttachment("data/resto_data.json").json();
-```
+// Load and process the data
+const data = await FileAttachment("data/resto_data.json").json();
+const {users, visits, restaurants, stats} = data;
 
-```js
-const {users, visits, restaurants} = resto_data;
+// Process dates for daily metrics
+function processDailyMetrics(users, visits) {
+  const dateRange = d3.timeDays(
+    new Date('2025-03-08'),
+    new Date('2025-03-16')
+  );
+  
+  // Count daily signups
+  const signupsByDay = d3.rollup(
+    users,
+    v => v.length,
+    d => d3.timeDay(new Date(d.created_at))
+  );
+  
+  // Count daily check-ins
+  const checkinsByDay = d3.rollup(
+    visits,
+    v => v.length,
+    d => d3.timeDay(new Date(d.created_at))
+  );
 
-display(users);
 
-// Display summary statistics
-display({
-  "Users": users.length,
-  "Visits": visits.length,
-  "Restaurants": restaurants.length
-});
+  
+  return dateRange.map(date => ({
+    date: d3.timeFormat("%Y-%m-%d")(date),
+    signups: signupsByDay.get(date) || 0,
+    checkins: checkinsByDay.get(date) || 0
+  }));
+}
 
-// Show sample data from each array
-display("Sample User:", users[0].email);
-display("Sample Visit:", visits[0]);
-display("Sample Restaurant:", restaurants[0]);
+// Calculate metrics
+const dailyMetrics = processDailyMetrics(users, visits);
+const totalSignups = users.length;
+const totalCheckins = visits.length;
+const visitedRestaurants = stats.visitedRestaurants;
 ```
 
 <div class="hero">
   <h1>Pleasure Island Restaurant Week</h1>
 </div>
 
+
 <div class="grid grid-cols-3">
   <div class="card">
-    Chart your own data using <a href="https://observablehq.com/framework/lib/plot"><code>Plot</code></a> and <a href="https://observablehq.com/framework/files"><code>FileAttachment</code></a>. Make it responsive using <a href="https://observablehq.com/framework/javascript#resize(render)"><code>resize</code></a>.
+    <h3>Total sign ups</h3>
+    <div style="font-size: 2em; font-weight: bold;">${totalSignups}</div>
+
   </div>
+
   <div class="card">
-    Create a <a href="https://observablehq.com/framework/project-structure">new page</a> by adding a Markdown file (<code>whatever.md</code>) to the <code>src</code> folder.
+    <h3>Total check ins</h3>
+    <div style="font-size: 2em; font-weight: bold;">${totalCheckins}</div>
   </div>
+
+  <div class="card">
+    <h3>Number of restaurants visited</h3>
+    <div style="font-size: 2em; font-weight: bold;">${visitedRestaurants}</div>
+  </div>
+
 </div>
+
 
 <div class="grid grid-cols-2" style="grid-auto-rows: 504px;">
   <div class="card">${
     resize((width) => Plot.plot({
-      title: "Your awesomeness over time 🚀",
-      subtitle: "Up and to the right!",
+      title: "Daily check-ins",
       width,
-      y: {grid: true, label: "Awesomeness"},
+      height: 300,
+      x: {
+        type: "band",
+        label: "Date",
+        tickFormat: d => d3.timeFormat("%b %d")(new Date(d))
+      },
+      y: {
+        label: "Number of Check-ins",
+        grid: true
+      },
       marks: [
-        Plot.ruleY([0]),
-        Plot.lineY(aapl, {x: "Date", y: "Close", tip: true})
+        Plot.rectY(dailyMetrics, {
+          x: "date",
+          y: "checkins",
+          fill: "#3b82f6",
+          title: d => `${d3.timeFormat("%B %d")(new Date(d.date))}: ${d.checkins} check-ins`
+        })
       ]
     }))
   }</div>
   <div class="card">${
     resize((width) => Plot.plot({
-      title: "How big are penguins, anyway? 🐧",
+      title: "Daily Sign-ups",
       width,
-      grid: true,
-      x: {label: "Body mass (g)"},
-      y: {label: "Flipper length (mm)"},
-      color: {legend: true},
+      height: 300,
+      x: {
+        type: "band",
+        label: "Date",
+        tickFormat: d => d3.timeFormat("%b %d")(new Date(d))
+      },
+      y: {
+        label: "Count",
+        grid: true
+      },
+      color: {
+        domain: ["Check-ins", "Sign-ups"],
+        range: [ "#10b981"]
+      },
       marks: [
-        Plot.linearRegressionY(penguins, {x: "body_mass_g", y: "flipper_length_mm", stroke: "species"}),
-        Plot.dot(penguins, {x: "body_mass_g", y: "flipper_length_mm", stroke: "species", tip: true})
+        Plot.rectY(dailyMetrics.flatMap(d => [
+          {date: d.date, value: d.signups, type: "Sign-ups"}
+        ]), {
+          x: "date",
+          y: "value",
+          fill: "type",
+          title: d => `${d.type}: ${d.value}`
+        })
       ]
     }))
   }</div>
-</div>
-
----
-
-## Next steps
-
-Here are some ideas of things you could try…
-
-<div class="grid grid-cols-4">
-  <div class="card">
-    Chart your own data using <a href="https://observablehq.com/framework/lib/plot"><code>Plot</code></a> and <a href="https://observablehq.com/framework/files"><code>FileAttachment</code></a>. Make it responsive using <a href="https://observablehq.com/framework/javascript#resize(render)"><code>resize</code></a>.
-  </div>
-  <div class="card">
-    Create a <a href="https://observablehq.com/framework/project-structure">new page</a> by adding a Markdown file (<code>whatever.md</code>) to the <code>src</code> folder.
-  </div>
-  <div class="card">
-    Add a drop-down menu using <a href="https://observablehq.com/framework/inputs/select"><code>Inputs.select</code></a> and use it to filter the data shown in a chart.
-  </div>
-  <div class="card">
-    Write a <a href="https://observablehq.com/framework/loaders">data loader</a> that queries a local database or API, generating a data snapshot on build.
-  </div>
-  <div class="card">
-    Import a <a href="https://observablehq.com/framework/imports">recommended library</a> from npm, such as <a href="https://observablehq.com/framework/lib/leaflet">Leaflet</a>, <a href="https://observablehq.com/framework/lib/dot">GraphViz</a>, <a href="https://observablehq.com/framework/lib/tex">TeX</a>, or <a href="https://observablehq.com/framework/lib/duckdb">DuckDB</a>.
-  </div>
-  <div class="card">
-    Ask for help, or share your work or ideas, on our <a href="https://github.com/observablehq/framework/discussions">GitHub discussions</a>.
-  </div>
-  <div class="card">
-    Visit <a href="https://github.com/observablehq/framework">Framework on GitHub</a> and give us a star. Or file an issue if you’ve found a bug!
-  </div>
 </div>
 
 <link rel="stylesheet" href="styles/main.css">

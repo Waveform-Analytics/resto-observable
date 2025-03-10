@@ -1,0 +1,20 @@
+I have a json file, resto_data.json. It contains 3 tables, described below. I would like to use these to generate a dashboard in observable framework (@index.md is the main page). These should not show any data on specific/individual restaurants, but overall stats. Cards at the top and then graphs below. one card should have number of sign ups. Should also have total number of check ins. one plot I'd like is just a bar chart of days. The dates are 8-15 March 2025. Then I'd like to break down the number of sign ups/check-ins per day - maybe have stacked bar plots? 
+
+1. **Users**: Combined user data from Clerk and Supabase
+   - `user_id`: Unique identifier (from Clerk)
+   - `email`: User's email (from Clerk)
+   - `name`: User's name (from Supabase)
+   - `phone`: Contact number (from Supabase)
+   - `created_at`: Account creation timestamp (from Supabase)
+
+2. **Visits**: Restaurant visit records from Supabase
+   - `visit_id`: Unique visit identifier
+   - `user_id`: ID of the user who made the visit
+   - `restaurant_id`: ID of the visited restaurant
+   - `created_at`: Timestamp of the visit
+
+3. **Restaurants**: Restaurant information from Supabase
+   - `id`: Unique restaurant identifier
+   - `address`: Restaurant's physical address
+   - `url`: Restaurant's website URL
+   - `code`: Restaurant's unique code
