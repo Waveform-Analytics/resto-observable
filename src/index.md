@@ -1,5 +1,6 @@
 ---
 toc: false
+theme: [alt, light]
 ---
 
 <!-- Load and transform the data -->
@@ -44,6 +45,27 @@ const dailyMetrics = processDailyMetrics(users, visits);
 const totalSignups = users.length;
 const totalCheckins = visits.length;
 const visitedRestaurants = stats.visitedRestaurants;
+
+// Calculate visits per user
+const visitsPerUser = d3.rollup(
+  visits,
+  v => v.length,
+  d => d.user_id
+);
+
+// Convert to array for histogram
+const visitsPerUserArray = Array.from(visitsPerUser.values());
+
+// Calculate some statistics
+const maxVisits = d3.max(visitsPerUserArray) || 0;
+const avgVisits = d3.mean(visitsPerUserArray) || 0;
+
+// Create bins for the histogram using d3.bin
+const binGenerator = d3.bin()
+  .domain([0, 29])
+  .thresholds(29); // Create 10 bins
+
+const bins = binGenerator(visitsPerUserArray);
 ```
 
 # Pleasure Island Restaurant Week
@@ -65,7 +87,7 @@ const visitedRestaurants = stats.visitedRestaurants;
   </div>
 </div>
 
-<div class="grid grid-cols-2 gap-4">
+<div class="grid grid-cols-2 gap-4 mb-4">
   <div class="card p-4">${
     resize((width) => Plot.plot({
       title: "Daily Sign-ups",
@@ -123,5 +145,33 @@ const visitedRestaurants = stats.visitedRestaurants;
     }))
   }</div>
 </div>
+
+<div class="card p-4 mb-4">${
+  resize((width) => Plot.plot({
+    title: "Distribution of Visits per User",
+    subtitle: `Average: ${avgVisits ? avgVisits.toFixed(1) : "0"} visits per user`,
+    width,
+    height: 300,
+    marginBottom: 30,
+    marks: [
+      Plot.rectY(bins, {
+        x1: d => d.x0,
+        x2: d => d.x1,
+        y: d => d.length,
+        fill: "#8b5cf6",
+        title: d => `${d.length} users with ${d.x0}-${d.x1} visits`
+      }),
+      Plot.ruleY([0])
+    ],
+    x: {
+      label: "Number of Visits",
+      domain: [0, 29]
+    },
+    y: {
+      label: "Number of Users",
+      grid: true
+    }
+  }))
+}</div>
 
 <link rel="stylesheet" href="styles/main.css">
