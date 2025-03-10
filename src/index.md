@@ -48,32 +48,30 @@ const visitedRestaurants = stats.visitedRestaurants;
 
 # Pleasure Island Restaurant Week
 
-<div class="grid grid-cols-3">
-  <div class="card">
+<div class="grid grid-cols-3 gap-4 mb-4">
+  <div class="card p-4">
     <h3>Total sign ups</h3>
     <div style="font-size: 2em; font-weight: bold;">${totalSignups}</div>
-
   </div>
 
-  <div class="card">
+  <div class="card p-4">
     <h3>Total check ins</h3>
     <div style="font-size: 2em; font-weight: bold;">${totalCheckins}</div>
   </div>
 
-  <div class="card">
+  <div class="card p-4">
     <h3>Number of restaurants visited</h3>
     <div style="font-size: 2em; font-weight: bold;">${visitedRestaurants}</div>
   </div>
-
 </div>
 
-
-<div class="grid grid-cols-2" style="grid-auto-rows: 504px;">
-  <div class="card">${
+<div class="grid grid-cols-2 gap-4">
+  <div class="card p-4">${
     resize((width) => Plot.plot({
       title: "Daily check-ins",
       width,
-      height: 300,
+      height: 400,
+      marginBottom: 30,
       x: {
         type: "band",
         label: "Date",
@@ -93,11 +91,12 @@ const visitedRestaurants = stats.visitedRestaurants;
       ]
     }))
   }</div>
-  <div class="card">${
+  <div class="card p-4">${
     resize((width) => Plot.plot({
       title: "Daily Sign-ups",
       width,
-      height: 300,
+      height: 400,
+      marginBottom: 30,
       x: {
         type: "band",
         label: "Date",
