@@ -51,12 +51,12 @@ const visitedRestaurants = stats.visitedRestaurants;
 <div class="grid grid-cols-3 gap-4 mb-4">
   <div class="card p-4">
     <h3>Total sign ups</h3>
-    <div style="font-size: 2em; font-weight: bold;">${totalSignups}</div>
+    <div style="font-size: 2em; font-weight: bold; color: #10b981;">${totalSignups}</div>
   </div>
 
   <div class="card p-4">
     <h3>Total check ins</h3>
-    <div style="font-size: 2em; font-weight: bold;">${totalCheckins}</div>
+    <div style="font-size: 2em; font-weight: bold; color: #3b82f6;">${totalCheckins}</div>
   </div>
 
   <div class="card p-4">
@@ -68,7 +68,38 @@ const visitedRestaurants = stats.visitedRestaurants;
 <div class="grid grid-cols-2 gap-4">
   <div class="card p-4">${
     resize((width) => Plot.plot({
-      title: "Daily check-ins",
+      title: "Daily Sign-ups",
+      width,
+      height: 400,
+      marginBottom: 30,
+      x: {
+        type: "band",
+        label: "Date",
+        tickFormat: d => d3.timeFormat("%b %d")(new Date(d))
+      },
+      y: {
+        label: "Count",
+        grid: true
+      },
+      color: {
+        domain: ["Sign-ups"],
+        range: ["#10b981"]
+      },
+      marks: [
+        Plot.rectY(dailyMetrics.flatMap(d => [
+          {date: d.date, value: d.signups, type: "Sign-ups"}
+        ]), {
+          x: "date",
+          y: "value",
+          fill: "type",
+          title: d => `${d.type}: ${d.value}`
+        })
+      ]
+    }))
+  }</div>
+  <div class="card p-4">${
+    resize((width) => Plot.plot({
+      title: "Daily Check-ins",
       width,
       height: 400,
       marginBottom: 30,
@@ -87,37 +118,6 @@ const visitedRestaurants = stats.visitedRestaurants;
           y: "checkins",
           fill: "#3b82f6",
           title: d => `${d3.timeFormat("%B %d")(new Date(d.date))}: ${d.checkins} check-ins`
-        })
-      ]
-    }))
-  }</div>
-  <div class="card p-4">${
-    resize((width) => Plot.plot({
-      title: "Daily Sign-ups",
-      width,
-      height: 400,
-      marginBottom: 30,
-      x: {
-        type: "band",
-        label: "Date",
-        tickFormat: d => d3.timeFormat("%b %d")(new Date(d))
-      },
-      y: {
-        label: "Count",
-        grid: true
-      },
-      color: {
-        domain: ["Check-ins", "Sign-ups"],
-        range: [ "#10b981"]
-      },
-      marks: [
-        Plot.rectY(dailyMetrics.flatMap(d => [
-          {date: d.date, value: d.signups, type: "Sign-ups"}
-        ]), {
-          x: "date",
-          y: "value",
-          fill: "type",
-          title: d => `${d.type}: ${d.value}`
         })
       ]
     }))
