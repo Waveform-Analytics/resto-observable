@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      # Set up Python
+      # Set up Python for data loaders
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -25,21 +25,27 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          
+      
       # Set up Node.js
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-          
-      # Install Node.js dependencies and build
-      - run: npm ci
-      - run: npm run build
       
-      # Deploy to Observable Cloud
-      - name: Deploy to Observable Cloud
-        # This parameter to `--message` will use the latest commit message
+      # Install Node.js dependencies
+      - run: npm ci
+      
+      # Build the site (data loaders will run automatically)
+      - run: npm run build
+        env:
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+      
+      # Deploy to Github Pages
+      - name: Deploy to Github pages
         run: npm run deploy -- --message "$(git log -1 --pretty=%s)"
         env:
-          # Authentication information. See below for how to set this up.
-          OBSERVABLE_TOKEN: ${{ secrets.OBSERVABLE_TOKEN }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
