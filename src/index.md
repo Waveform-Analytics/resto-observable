@@ -31,8 +31,6 @@ function processDailyMetrics(users, visits) {
     d => d3.timeDay(new Date(d.created_at))
   );
 
-
-  
   return dateRange.map(date => ({
     date: d3.timeFormat("%Y-%m-%d")(date),
     signups: signupsByDay.get(date) || 0,
@@ -60,12 +58,14 @@ const visitsPerUserArray = Array.from(visitsPerUser.values());
 const maxVisits = d3.max(visitsPerUserArray) || 0;
 const avgVisits = d3.mean(visitsPerUserArray) || 0;
 
-// Create bins for the histogram using d3.bin
-const binGenerator = d3.bin()
-  .domain([0, 29])
-  .thresholds(29); // Create 10 bins
-
-const bins = binGenerator(visitsPerUserArray);
+// Create discrete distribution data with all possible visit counts
+const visitDistribution = Array.from(
+  { length: 29 }, // 1 to 29 visits
+  (_, i) => ({
+    visits: i + 1, // Start from 1 instead of 0
+    count: Array.from(visitsPerUser.values()).filter(v => v === (i + 1)).length
+  })
+);
 ```
 
 # Pleasure Island Restaurant Week
@@ -154,18 +154,18 @@ const bins = binGenerator(visitsPerUserArray);
     height: 300,
     marginBottom: 30,
     marks: [
-      Plot.rectY(bins, {
-        x1: d => d.x0,
-        x2: d => d.x1,
-        y: d => d.length,
+      Plot.rectY(visitDistribution, {
+        x: "visits",
+        y: "count",
         fill: "#8b5cf6",
-        title: d => `${d.length} users with ${d.x0}-${d.x1} visits`
+        title: d => `${d.count} user${d.count === 1 ? '' : 's'} with ${d.visits} visit${d.visits === 1 ? '' : 's'}`
       }),
       Plot.ruleY([0])
     ],
     x: {
+      type: "band",
       label: "Number of Visits",
-      domain: [0, 29]
+      domain: visitDistribution.map(d => d.visits)  // Explicitly set all possible values
     },
     y: {
       label: "Number of Users",
