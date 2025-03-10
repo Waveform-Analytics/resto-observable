@@ -12,9 +12,10 @@ const {users, visits, restaurants, stats} = data;
 
 // Process dates for daily metrics
 function processDailyMetrics(users, visits) {
+  // Ensure dates are created with time set to noon to avoid timezone issues
   const dateRange = d3.timeDays(
-    new Date('2025-03-08'),
-    new Date('2025-03-16')
+    new Date('2025-03-08T12:00:00'),
+    new Date('2025-03-16T12:00:00')
   );
   
   // Count daily signups
@@ -97,7 +98,7 @@ const visitDistribution = Array.from(
       x: {
         type: "band",
         label: "Date",
-        tickFormat: d => d3.timeFormat("%b %d")(new Date(d))
+        tickFormat: d => d3.timeFormat("%a")(new Date(d))
       },
       y: {
         label: "Count",
@@ -114,7 +115,7 @@ const visitDistribution = Array.from(
           x: "date",
           y: "value",
           fill: "type",
-          title: d => `${d.type}: ${d.value}`
+          title: d => `${d3.timeFormat("%A")(new Date(d.date))}: ${d.value} sign-ups`
         })
       ]
     }))
@@ -128,7 +129,7 @@ const visitDistribution = Array.from(
       x: {
         type: "band",
         label: "Date",
-        tickFormat: d => d3.timeFormat("%b %d")(new Date(d))
+        tickFormat: d => d3.timeFormat("%a")(new Date(d))
       },
       y: {
         label: "Number of Check-ins",
@@ -139,7 +140,7 @@ const visitDistribution = Array.from(
           x: "date",
           y: "checkins",
           fill: "#3b82f6",
-          title: d => `${d3.timeFormat("%B %d")(new Date(d.date))}: ${d.checkins} check-ins`
+          title: d => `${d3.timeFormat("%A")(new Date(d.date))}: ${d.checkins} check-ins`
         })
       ]
     }))
