@@ -12,44 +12,51 @@ const {users, visits, restaurants, stats} = data;
 
 // Process dates for daily metrics
 function processDailyMetrics(users, visits) {
-  // Create dates at start of day to avoid timezone issues
-  const startDate = new Date('2025-03-08');
-  startDate.setHours(0, 0, 0, 0);
-  const endDate = new Date('2025-03-16');
-  endDate.setHours(0, 0, 0, 0);
-  
+  // Create date range - explicitly set to midnight UTC
+  const startDate = new Date('2025-03-08T00:00:00Z');
+  const endDate = new Date('2025-03-16T00:00:00Z');
   const dateRange = d3.timeDays(startDate, endDate);
   
-  // Count daily signups with explicit date comparison
+  // Count daily signups using UTC dates
   const signupsByDay = d3.rollup(
     users,
     v => v.length,
     d => {
       const date = new Date(d.created_at);
-      date.setHours(0, 0, 0, 0);
-      return date.getTime();
+      return d3.utcFormat("%Y-%m-%d")(date);  // Use UTC format here
     }
   );
   
-  // Count daily check-ins with explicit date comparison
+  // Count daily check-ins using UTC dates
   const checkinsByDay = d3.rollup(
     visits,
     v => v.length,
     d => {
       const date = new Date(d.created_at);
-      date.setHours(0, 0, 0, 0);
-      return date.getTime();
+      return d3.utcFormat("%Y-%m-%d")(date);  // Use UTC format here
     }
   );
 
-  return dateRange.map(date => {
-    const dateKey = date.getTime();
+  // For debugging
+  console.log("Signups by day:", Object.fromEntries(signupsByDay));
+
+  const metrics = dateRange.map(date => {
+    const dateStr = d3.utcFormat("%Y-%m-%d")(date);  // Use UTC format here
     return {
-      date: d3.timeFormat("%Y-%m-%d")(date),
-      signups: signupsByDay.get(dateKey) || 0,
-      checkins: checkinsByDay.get(dateKey) || 0
+      date: dateStr,
+      signups: signupsByDay.get(dateStr) || 0,
+      checkins: checkinsByDay.get(dateStr) || 0
     };
   });
+
+  // More detailed debugging
+  console.log("Raw signup dates:", users.map(u => ({
+    created_at: u.created_at,
+    formatted: d3.utcFormat("%Y-%m-%d")(new Date(u.created_at))
+  })));
+  console.log("Daily metrics:", metrics);
+  
+  return metrics;
 }
 
 // Calculate metrics
@@ -114,7 +121,11 @@ const visitDistribution = Array.from(
       x: {
         type: "band",
         label: "Date",
-        tickFormat: d => d3.timeFormat("%a")(new Date(d))
+        tickFormat: d => {
+          // Ensure we parse the date string and format it in UTC
+          const date = new Date(d + 'T00:00:00Z');
+          return d3.utcFormat("%a")(date);
+        }
       },
       y: {
         label: "Count",
@@ -125,13 +136,14 @@ const visitDistribution = Array.from(
         range: ["#10b981"]
       },
       marks: [
-        Plot.rectY(dailyMetrics.flatMap(d => [
-          {date: d.date, value: d.signups, type: "Sign-ups"}
-        ]), {
+        Plot.rectY(dailyMetrics, {
           x: "date",
-          y: "value",
-          fill: "type",
-          title: d => `${d3.timeFormat("%A")(new Date(d.date))}: ${d.value} sign-ups`
+          y: "signups",
+          fill: "#10b981",
+          title: d => {
+            const date = new Date(d.date + 'T00:00:00Z');
+            return `${d3.utcFormat("%A")(date)}: ${d.signups} sign-ups`;
+          }
         })
       ]
     }))
@@ -145,7 +157,10 @@ const visitDistribution = Array.from(
       x: {
         type: "band",
         label: "Date",
-        tickFormat: d => d3.timeFormat("%a")(new Date(d))
+        tickFormat: d => {
+          const date = new Date(d + 'T00:00:00Z');
+          return d3.utcFormat("%a")(date);
+        }
       },
       y: {
         label: "Number of Check-ins",
@@ -156,7 +171,10 @@ const visitDistribution = Array.from(
           x: "date",
           y: "checkins",
           fill: "#3b82f6",
-          title: d => `${d3.timeFormat("%A")(new Date(d.date))}: ${d.checkins} check-ins`
+          title: d => {
+            const date = new Date(d.date + 'T00:00:00Z');
+            return `${d3.utcFormat("%A")(date)}: ${d.checkins} check-ins`;
+          }
         })
       ]
     }))
