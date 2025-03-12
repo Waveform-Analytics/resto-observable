@@ -181,14 +181,15 @@ const visitDistribution = Array.from(
     width,
     height: 400,
     marginLeft: 60,
-    marginBottom: 30,
+    marginBottom: 50,
     grid: true,
     x: {
       type: "band",
       label: "Hour",
       domain: d3.range(24),
-      tickFormat: d => d,
-      tickRotate: 0
+      tickFormat: d => d + "h",
+      tickRotate: 45,
+      tickPadding: 5
     },
     y: {
       type: "band",
@@ -222,7 +223,7 @@ const visitDistribution = Array.from(
     subtitle: `Average: ${avgVisits ? avgVisits.toFixed(1) : "0"} visits per user`,
     width,
     height: 300,
-    marginBottom: 30,
+    marginBottom: 50,
     marks: [
       Plot.rectY(visitDistribution, {
         x: "visits",
@@ -235,7 +236,9 @@ const visitDistribution = Array.from(
     x: {
       type: "band",
       label: "Number of Visits",
-      domain: visitDistribution.map(d => d.visits)  // Explicitly set all possible values
+      domain: visitDistribution.map(d => d.visits),
+      tickFormat: d => d % 2 === 0 ? d : "",  // Only show even numbers
+      tickPadding: 5
     },
     y: {
       label: "Number of Users",
