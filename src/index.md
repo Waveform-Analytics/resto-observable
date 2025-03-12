@@ -199,6 +199,7 @@ const visitDistribution = Array.from(
     color: {
       type: "linear",
       scheme: "purples",
+      domain: [0, 10],  // Compress the scale to make lower values more visible
       legend: true
     },
     marks: [
