@@ -8,7 +8,7 @@ theme: [alt, light]
 ```js
 // Load and process the data
 const data = await FileAttachment("data/resto_data.json").json();
-const {users, visits, restaurants, stats} = data;
+const {users, visits, restaurants, complete_counts, actual_counts, stats} = data;
 
 // Process dates for daily metrics
 function processDailyMetrics(users, visits) {
@@ -37,8 +37,7 @@ function processDailyMetrics(users, visits) {
     }
   );
 
-  // For debugging
-  console.log("Signups by day:", Object.fromEntries(signupsByDay));
+
 
   const metrics = dateRange.map(date => {
     const dateStr = d3.utcFormat("%Y-%m-%d")(date);  // Use UTC format here
@@ -49,13 +48,7 @@ function processDailyMetrics(users, visits) {
     };
   });
 
-  // More detailed debugging
-  console.log("Raw signup dates:", users.map(u => ({
-    created_at: u.created_at,
-    formatted: d3.utcFormat("%Y-%m-%d")(new Date(u.created_at))
-  })));
-  console.log("Daily metrics:", metrics);
-  
+
   return metrics;
 }
 
@@ -65,7 +58,7 @@ const totalSignups = users.length;
 const totalCheckins = visits.length;
 const visitedRestaurants = stats.visitedRestaurants;
 
-// display(dailyMetrics);
+// display(complete_counts);
 
 // Calculate visits per user
 const visitsPerUser = d3.rollup(
@@ -112,74 +105,115 @@ const visitDistribution = Array.from(
 </div>
 
 <div class="grid grid-cols-2 gap-4 mb-4">
-  <div class="card p-4">${
-    resize((width) => Plot.plot({
-      title: "Daily Sign-ups",
-      width,
-      height: 400,
-      marginBottom: 30,
-      x: {
-        type: "band",
-        label: "Date",
-        tickFormat: d => {
-          // Ensure we parse the date string and format it in UTC
-          const date = new Date(d + 'T00:00:00Z');
-          return d3.utcFormat("%a")(date);
-        }
-      },
-      y: {
-        label: "Count",
-        grid: true
-      },
-      color: {
-        domain: ["Sign-ups"],
-        range: ["#10b981"]
-      },
-      marks: [
-        Plot.rectY(dailyMetrics, {
-          x: "date",
-          y: "signups",
-          fill: "#10b981",
-          title: d => {
-            const date = new Date(d.date + 'T00:00:00Z');
-            return `${d3.utcFormat("%A")(date)}: ${d.signups} sign-ups`;
+  <div class="card p-4">
+    <div class="mb-6">${
+      resize((width) => Plot.plot({
+        title: "Daily Sign-ups",
+        width,
+        height: 200,
+        marginBottom: 30,
+        x: {
+          type: "band",
+          label: "Date",
+          tickFormat: d => {
+            // Ensure we parse the date string and format it in UTC
+            const date = new Date(d + 'T00:00:00Z');
+            return d3.utcFormat("%a")(date);
           }
-        })
-      ]
-    }))
-  }</div>
-  <div class="card p-4">${
-    resize((width) => Plot.plot({
-      title: "Daily Check-ins",
-      width,
-      height: 400,
-      marginBottom: 30,
-      x: {
-        type: "band",
-        label: "Date",
-        tickFormat: d => {
-          const date = new Date(d + 'T00:00:00Z');
-          return d3.utcFormat("%a")(date);
-        }
-      },
-      y: {
-        label: "Number of Check-ins",
-        grid: true
-      },
-      marks: [
-        Plot.rectY(dailyMetrics, {
-          x: "date",
-          y: "checkins",
-          fill: "#3b82f6",
-          title: d => {
-            const date = new Date(d.date + 'T00:00:00Z');
-            return `${d3.utcFormat("%A")(date)}: ${d.checkins} check-ins`;
+        },
+        y: {
+          label: "Count",
+          grid: true
+        },
+        color: {
+          domain: ["Sign-ups"],
+          range: ["#10b981"]
+        },
+        marks: [
+          Plot.rectY(dailyMetrics, {
+            x: "date",
+            y: "signups",
+            fill: "#10b981",
+            title: d => {
+              const date = new Date(d.date + 'T00:00:00Z');
+              return `${d3.utcFormat("%A")(date)}: ${d.signups} sign-ups`;
+            }
+          })
+        ]
+      }))
+    }</div>
+    <div>${
+      resize((width) => Plot.plot({
+        title: "Daily Check-ins",
+        width,
+        height: 200,
+        marginBottom: 30,
+        x: {
+          type: "band",
+          label: "Date",
+          tickFormat: d => {
+            const date = new Date(d + 'T00:00:00Z');
+            return d3.utcFormat("%a")(date);
           }
-        })
-      ]
-    }))
-  }</div>
+        },
+        y: {
+          label: "Number of Check-ins",
+          grid: true
+        },
+        marks: [
+          Plot.rectY(dailyMetrics, {
+            x: "date",
+            y: "checkins",
+            fill: "#3b82f6",
+            title: d => {
+              const date = new Date(d.date + 'T00:00:00Z');
+              return `${d3.utcFormat("%A")(date)}: ${d.checkins} check-ins`;
+            }
+          })
+        ]
+      }))
+    }</div>
+  </div>
+  <div class="card p-4">
+    <!-- Cell Plot -->
+      ${resize((width) => Plot.plot({
+    title: "Visits by Hour and Day",
+    width,
+    height: 400,
+    marginLeft: 60,
+    marginBottom: 30,
+    grid: true,
+    x: {
+      type: "band",
+      label: "Hour",
+      domain: d3.range(24),
+      tickFormat: d => d,
+      tickRotate: 0
+    },
+    y: {
+      type: "band",
+      label: null,
+      domain: d3.range(8, 16),
+      tickFormat: d => `Mar ${d}`
+    },
+    color: {
+      type: "linear",
+      scheme: "purples",
+      legend: true
+    },
+    marks: [
+      Plot.cell(actual_counts, {
+        x: "hour_of_day",
+        y: "day_of_month",
+        fill: "visit_count",
+        title: d => `${d.visit_count} visits on March ${d.day_of_month} at ${d.hour_of_day.toString().padStart(2, '0')}:00`
+      })
+    ]
+  }))}
+  </div>
 </div>
+
+  
 
 <div class="card p-4 mb-4">${
   resize((width) => Plot.plot({
