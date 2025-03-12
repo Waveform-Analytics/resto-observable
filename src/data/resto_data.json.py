@@ -122,6 +122,23 @@ complete_counts["visit_count"] = complete_counts["visit_count"].fillna(0).astype
 all_data["complete_counts"] = complete_counts # with zeros
 all_data["actual_counts"] = actual_counts # only include non-zero rows
 
+# Create a table of visit counts per restaurant
+restaurant_visit_counts = (
+    all_data["visits"]
+    .groupby("restaurant_id")
+    .size()
+    .reset_index(name="visit_count")
+)
+
+# Merge with restaurants to include those with zero visits
+restaurant_visit_counts = (
+    all_data["restaurants"][["id", "name"]]
+    .merge(restaurant_visit_counts, left_on="id", right_on="restaurant_id", how="left")
+    .fillna({"visit_count": 0})  # Fill NaN values with 0 for restaurants with no visits
+    [["name", "visit_count"]]  # Select only needed columns
+    .sort_values("visit_count", ascending=False)
+)
+all_data["restaurant_visit_counts"] = restaurant_visit_counts
 
 def convert_timestamps(obj):
     if isinstance(obj, (pd.Timestamp, datetime)):

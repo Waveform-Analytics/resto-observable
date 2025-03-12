@@ -8,7 +8,7 @@ theme: [alt, light]
 ```js
 // Load and process the data
 const data = await FileAttachment("data/resto_data.json").json();
-const {users, visits, restaurants, complete_counts, actual_counts, stats} = data;
+const {users, visits, restaurants, complete_counts, actual_counts,restaurant_visit_counts, stats} = data;
 
 // Process dates for daily metrics
 function processDailyMetrics(users, visits) {
@@ -244,6 +244,34 @@ const visitDistribution = Array.from(
       label: "Number of Users",
       grid: true
     }
+  }))
+}</div>
+
+<div class="card p-4 mb-4">${
+  resize((width) => Plot.plot({
+    title: "Visits by Restaurant",
+    width,
+    height: Math.max(300, restaurant_visit_counts.length * 25),
+    marginLeft: 150,
+    marginRight: 40,
+    marginTop: 40,
+    x: {
+      label: "Number of Visits",
+      grid: true,
+      axis: "top"
+    },
+    y: {
+      label: null,
+      domain: d3.sort(restaurant_visit_counts, d => -d.visit_count).map(d => d.name)
+    },
+    marks: [
+      Plot.barX(restaurant_visit_counts, {
+        y: "name",
+        x: "visit_count",
+        fill: "#8b5cf6",
+        title: d => `${d.name}: ${d.visit_count} visit${d.visit_count === 1 ? '' : 's'}`
+      })
+    ]
   }))
 }</div>
 
