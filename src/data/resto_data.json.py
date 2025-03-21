@@ -82,6 +82,14 @@ all_data["visits"] = all_data["visits"].merge(
     suffixes=("_visits", "_restaurants"),
 )
 
+# Merge users and visits tables
+all_data["visits_with_users"] = all_data["visits"].merge(
+    all_data["users"],
+    on="user_id",
+    how="left",
+    suffixes=("", "_user")
+)
+
 # Adjust time zone in visits and users tables
 all_data["visits"]["created_at"] = pd.to_datetime(all_data["visits"]["created_at"])
 all_data["visits"]["created_at"] = all_data["visits"]["created_at"].dt.tz_convert(
@@ -161,6 +169,8 @@ json_ready_data["stats"] = {
 
 # Convert dictionary to JSON string with indentation for readability
 json_data = json.dumps(json_ready_data, indent=4, default=convert_timestamps)
+
+all_data['visits_with_users'].to_csv('visits_with_users.csv', index=False)
 
 # Print JSON to stdout (required for Observable Framework loaders)
 sys.stdout.write(json_data)
